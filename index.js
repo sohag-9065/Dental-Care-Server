@@ -9,15 +9,12 @@ const port = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
-
-
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.mbdxrli.mongodb.net/?retryWrites=true&w=majority`;
 
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
 
 function verifyJWT(req, res, next) {
   const authHeader = req.headers.authorization;
-  // console.log(authHeader);
   if (!authHeader) {
     return res.status(401).send({ message: 'UnAuthorized access' });
   }
@@ -55,9 +52,9 @@ async function run() {
       const email = req.params.email;
       const user = await usersCollection.findOne({email: email});
       const isAdmin = user.role === 'admin';
-      // console.log(user);
       return res.send({admin: isAdmin});
     })
+    
 
     app.put('/user/admin/:email', verifyJWT, async (req, res) => {
       console.log("Problem inside");
@@ -76,6 +73,7 @@ async function run() {
      
     })
 
+    // user token generate by email
     app.put('/user/:email', async (req, res) => {
       const email = req.params.email;
       const user = req.body;
@@ -89,10 +87,9 @@ async function run() {
       res.send({ result, token });
     })
 
+    // available  appoinmnet check
     app.get('/available', async (req, res) => {
       const date = req.query.date;
-      // const date =  'October 13th, 2022';
-
       const services = await serviceCollection.find().toArray();
 
       const query = { date: date };
@@ -107,7 +104,7 @@ async function run() {
       res.send(services);
     })
 
-    // booking 
+    // booking  get
 
     app.get('/booking', verifyJWT, async (req, res) => {
       const patient = req.query.patient;
@@ -123,7 +120,7 @@ async function run() {
       }
 
     })
-
+// booking  post
     app.post('/booking', async (req, res) => {
       const booking = req.body;
       const query = { treatment: booking.treatment, date: booking.date, patient: booking.patient }
